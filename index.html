@@ -325,6 +325,9 @@ dialog::backdrop { background: rgba(8, 12, 16, .6); }
 .temas > div { display: grid; grid-template-columns: minmax(150px, 210px) minmax(0, 1fr); gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: .9rem; }
 .temas > div > b { font-weight: 600; color: var(--ink); }
 .temas .sr-t { color: var(--muted); }
+.src-tag { font: 500 .66rem var(--f-mono); letter-spacing: 0; text-transform: none; color: var(--muted); background: var(--surface-2); border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: middle; }
+.op-row { display: flex; flex-direction: column; gap: 8px; }
+.op-row + .op-row { padding-top: 12px; border-top: 1px solid var(--line); }
 .attn { background: var(--no-soft); padding: 10px 12px; border-radius: 10px; font-size: .9rem; }
 .rank { display: flex; flex-direction: column; gap: 5px; }
 .rank .r { display: grid; grid-template-columns: minmax(130px, 210px) minmax(0, 1fr) 58px; gap: 10px; align-items: center; font-size: .84rem; }
@@ -375,10 +378,11 @@ dialog::backdrop { background: rgba(8, 12, 16, .6); }
       <button type="button" data-sec="visao"><span class="n">1</span>Visão geral e pesquisas</button>
       <button type="button" data-sec="pautas"><span class="n">2</span>Pautas</button>
       <button type="button" data-sec="politicos"><span class="n">3</span>Perfis dos políticos</button>
-      <button type="button" data-sec="produtividade"><span class="n">4</span>Produtividade e assiduidade</button>
-      <button type="button" data-sec="matriz"><span class="n">5</span>Matriz comparativa</button>
-      <button type="button" data-sec="votacoes"><span class="n">6</span>Votações e AL-BA</button>
-      <button type="button" data-sec="metodo"><span class="n">7</span>Método, limites e fontes</button>
+      <button type="button" data-sec="menores"><span class="n">4</span>Candidatos menores</button>
+      <button type="button" data-sec="produtividade"><span class="n">5</span>Produtividade e assiduidade</button>
+      <button type="button" data-sec="matriz"><span class="n">6</span>Matriz comparativa</button>
+      <button type="button" data-sec="votacoes"><span class="n">7</span>Votações e AL-BA</button>
+      <button type="button" data-sec="metodo"><span class="n">8</span>Método, limites e fontes</button>
     </nav>
     <div class="side-foot">
       <p>Fonte única: relatório <em>Perfis e posicionamentos: políticos da Bahia em 2026</em> (29/9/2026). Situação das pautas em 30/9/2026.</p>
@@ -408,6 +412,7 @@ dialog::backdrop { background: rgba(8, 12, 16, .6); }
       <section id="sec-visao" class="sec" data-sec="visao"></section>
       <section id="sec-pautas" class="sec" data-sec="pautas" hidden></section>
       <section id="sec-politicos" class="sec" data-sec="politicos" hidden></section>
+      <section id="sec-menores" class="sec" data-sec="menores" hidden></section>
       <section id="sec-produtividade" class="sec" data-sec="produtividade" hidden></section>
       <section id="sec-matriz" class="sec" data-sec="matriz" hidden></section>
       <section id="sec-votacoes" class="sec" data-sec="votacoes" hidden></section>
@@ -723,7 +728,7 @@ const PERFIS = [
     espectroTxt: "Esquerda.", posPartido: "Sem posicionamento registrado nos temas.",
     temasNota: "Maioridade penal, facções como terroristas e porte de armas: sem posicionamento pessoal registrado."
   },
-  { id: "candidato-dc", nome: "Candidato do DC (Ariel Capistrano)", cargo: "gov", partido: "DC", sigla: "DC", campo: "out", espectro: "Não especificado (se apresentava fora da polarização)", poll: "0,3% (governo, set.)",
+  { id: "candidato-dc", nome: "Ariel Capistrano", cargo: "gov", partido: "DC", sigla: "DC", campo: "out", espectro: "Centro-direita", poll: "0,3% (governo, set.)",
     ident: "Candidato ao governo pelo DC. Sem mandato, então não há votos registrados.",
     trajetoria: ["A CNN listou José Estêvão, consultor e administrador, em agosto. As pesquisas de setembro testam Ariel Capistrano, o que indica troca de candidato. Estêvão se apresentava fora da polarização."],
     espectroTxt: "Estêvão se apresentava fora da polarização.", posPartido: "Sem posicionamento registrado nos temas.",
@@ -843,6 +848,83 @@ const PERFIS = [
 const GRUPO_INTRO = {
   gov: `**Governador — demais candidatos.** Nenhum dos outros quatro passa de 1% das intenções de voto. Nenhum tem mandato, então não há votos registrados. Quando só existe a posição do partido, ela aparece marcada como tal ([CNN](${U.cnnCand}); pesquisa: [Paraná Pesquisas](${U.parana})).`,
   sen: `**Senado — demais candidatos.** Os outros seis candidatos somam menos de 10% das menções. Nenhum tem mandato, então não há votos registrados em nenhuma das pautas. Quando só existe a posição do partido, ela aparece marcada ([Poder360](https://www.poder360.com.br/poder-eleicoes-2026/saiba-quem-sao-os-candidatos-ao-senado-pela-bahia-em-2026/); [BN](${U.bnSenCand})). Otto Alencar (PSD) não disputa em 2026: o mandato dele vai até 2031.`
+};
+
+/* ---------------- CANDIDATOS MENORES (relatório complementar de 30/9/2026) ---------------- */
+const MENORES = {
+  titulo: "Candidatos menores na Bahia 2026: governo e Senado",
+  data: "30/9/2026",
+  resumo: "Este relatório reúne os dez candidatos que pontuam entre 0,3% e 3,8% nas pesquisas de setembro: quatro ao governo e seis ao Senado. Nenhum tem mandato ou votos registrados no Congresso, então o que existe são o perfil, os bens declarados à Justiça Eleitoral, as propostas de campanha e algumas declarações em entrevistas. Cada item diz se é declaração dele, proposta de campanha ou linha do partido, e de onde vem.",
+  contexto: "Contexto (Paraná Pesquisas, 21 a 23/9/2026): no governo, ACM Neto tem 46,7% e Jerônimo 42,0%. No Senado, Rui Costa tem 46,3%, Jaques Wagner 34,0%, Roma 27,3% e Coronel 25,1%. O primeiro turno é em 4/10/2026. Os percentuais dos dez candidatos vêm da mesma rodada.",
+  frase: "Sete dos dez são da esquerda fora do PT (PSOL, Rede, UP, PCO), dois são do DC e um do Mobiliza. Os mais estruturados são Delliana e Marcelo Carvalho, com posição clara sobre 6x1 e segurança. Os com menos informação são Marcelo Santtana e Marcelo Millet.",
+  gov: ["ronaldo-mansur", "aroldo-felix", "candidato-dc", "maria-bona"],
+  sen: ["delliana", "marcelo-carvalho", "carlos-sodre", "marcelo-santtana", "gregorio-gould", "marcelo-millet"],
+  cands: {
+    "ronaldo-mansur": { numero: 50, partidoTxt: "PSOL (federação PSOL-Rede)", chapa: "Vice: Meire Reis", pesquisa: "0,8%", perfil: "Técnico ambiental, presidente estadual do PSOL, militante do MTST", bens: "n/d",
+      trajetoria: `Foi candidato a vice-governador em 2014 e 2022. Apresenta a candidatura como alternativa popular à polarização entre Jerônimo e ACM Neto, e defende encerrar o ciclo do PT na Bahia ([BN](https://www.bahianoticias.com.br/noticia/319517-ronaldo-mansur-classifica-candidatura-como-alternativa-popular-para-romper-polarizacao-entre-jeronimo-e-acm-neto)).`,
+      declaracoes: { fonte: "sabatina do A TARDE", itens: [`A favor de legalizar a maconha, do aborto pelo SUS e de desmilitarizar a PM ([A TARDE](https://atarde.com.br/eleicoes/sabatina-a-tarde-ronaldo-mansur-defende-regulamentacao-da-cannabis-e-aborto-pelo-sus-1399092)).`] },
+      propostas: { fonte: "Bahia Notícias", itens: ["Suspender o pagamento da dívida do estado com a União e usar o dinheiro em programas sociais.", "Concurso público na saúde, que não acontece na Bahia desde 2008, e novos hospitais.", "Reativar o Derba, apoiar pequenos produtores e a agricultura familiar.", "Investir em trem, metrô e transporte por rio."] },
+      partido: "O PSOL é autor da PEC da 6x1 (Erika Hilton) e foi o único a orientar contra a PEC 18/2025 (Segurança) na Câmara.",
+      temas: { c: "Declaração (sabatina do A TARDE): a favor de desmilitarizar a PM." } },
+    "aroldo-felix": { numero: 80, partidoTxt: "UP", chapa: "Vice: Marília do MLB (no relatório de 29/9: Marília Regina)", pesquisa: "0,6%", perfil: "Professor universitário e sindicalista, de João Pessoa", bens: "R$ 857 mil",
+      trajetoria: "Professor universitário (UFRB), dirigente do ANDES-SN e fundador da UP. Disputou o governo de Sergipe em 2022. Declarou R$ 857 mil, principalmente um apartamento financiado em Salvador.",
+      propostas: { fonte: `plano de governo de uma página, com 15 propostas, registrado no TSE; [A TARDE](https://atarde.com.br/eleicoes/aroldo-felix-registra-candidatura-ao-governo-da-bahia-com-plano-de-uma-pagina-1398150)`, itens: ["Dobrar o salário mínimo e suspender o pagamento da dívida do estado.", "Reestatizar empresas privatizadas e desmilitarizar a polícia.", "Obrigar políticos a usar escola e hospital públicos.", "Destinar 10% do PIB da Bahia à educação."] },
+      semDecl: "Não há declaração dele sobre as pautas do Congresso.",
+      temas: { c: "Proposta de campanha: desmilitarizar a polícia." } },
+    "candidato-dc": { numero: 27, partidoTxt: "DC", chapa: "", pesquisa: "0,3%", perfil: "39 anos, empresário, de Feira de Santana", bens: "R$ 500 mil", espectro: "Centro-direita",
+      trajetoria: "Empresário, ex-presidente do PTB baiano e de associação de guias de turismo. Declarou um único bem, um terreno de R$ 500 mil. Espectro: centro-direita.",
+      atencao: `O DC tem duas candidaturas ao governo, a de Ariel e a de José Estêvão, consultor, por disputa interna pelo comando do partido. Em 18/8 o TSE negou o pedido de Ariel para afastar a direção e manteve as duas ([A TARDE](https://atarde.com.br/eleicoes/decisao-da-justica-mantem-dc-com-duas-candidaturas-ao-governo-da-bahia-1399020)). As pesquisas testam Ariel, mas quem comanda o DC baiano é Estêvão.`,
+      propostas: { fonte: `[CNN](https://www.cnnbrasil.com.br/eleicoes/quem-e-ariel-capistrano-candidato-ao-governo-da-bahia/)`, itens: ["Apresenta-se como terceira via, com mais policiais e operações contra drogas, mais leitos, escolas cívico-militares, crédito rural e obras em estradas."] },
+      temas: { c: "Proposta de campanha: mais policiais e operações contra drogas; escolas cívico-militares." } },
+    "maria-bona": { numero: 29, partidoTxt: "PCO", chapa: "Vice: Zé Ricardo", pesquisa: "0,3%", perfil: "73 anos, aposentada, nascida em São Paulo", bens: "n/d",
+      trajetoria: "Aposentada de 73 anos, militante de movimentos sociais em Rio de Contas (Chapada Diamantina). Primeira eleição e única mulher na disputa pelo governo.",
+      propostas: { fonte: `[CNN](https://www.cnnbrasil.com.br/eleicoes/quem-e-maria-bona-candidata-ao-governo-da-bahia/)`, itens: ["Salário mínimo de R$ 7.500 e Bolsa Família de um salário mínimo.", "Jornada de 7 horas.", "Perdão de dívidas de trabalhadores.", "Reforma agrária com desapropriação de latifúndios e demarcação de terras indígenas.", "Usa a campanha para defender a revolução comunista."] },
+      temas: { e: "Proposta de campanha: jornada de 7 horas." } },
+    "delliana": { numero: 50, partidoTxt: "PSOL", chapa: "Suplentes: Nilo Rosa e Jeovane Marúsia (PSOL)", pesquisa: "3,8%", perfil: "43 anos, professora do sul da Bahia", bens: "R$ 7,8 mil", nomeCompleto: "Delliana Ricelli",
+      trajetoria: "Delliana Ricelli, professora do sul da Bahia e única mulher na disputa ao Senado.",
+      declaracoes: { fonte: "entrevistas ao A TARDE", itens: [`Chama a escala 6x1 de "perversa", porque tira o convívio familiar ([A TARDE](https://atarde.com.br/eleicoes/deliana-ricelli-defende-fim-da-escala-6x1-e-perversa-1398380)).`, `Cobra paridade de gênero na política e diz que o policial é trabalhador, mas que a polícia não pode continuar letal e precisa investir em inteligência ([A TARDE](https://atarde.com.br/eleicoes/delliana-ricelli-cobra-mais-mulheres-na-politica-e-defende-policiais-1398406)).`] },
+      partido: "Autor da PEC da 6x1, a favor de restringir as bets, único contra a PEC 18/2025 na Câmara e contra a redução da maioridade penal.",
+      temas: { e: "Declaração: chama a escala 6x1 de \"perversa\", porque tira o convívio familiar (A TARDE).", c: "Declaração: o policial é trabalhador, mas a polícia não pode continuar letal e precisa investir em inteligência (A TARDE)." } },
+    "marcelo-carvalho": { numero: 18, partidoTxt: "Rede", chapa: "Suplentes: Zem Costa e Cris Marques (PSOL)", pesquisa: "2,2%", perfil: "45 anos, professor de filosofia, presidente licenciado da UGT na Bahia", bens: "R$ 540 mil", nomeCompleto: "Marcelo Carvalho Lavigne",
+      trajetoria: "Marcelo Carvalho Lavigne tentou ser vereador de Salvador em 2020 e 2024, sem se eleger.",
+      declaracoes: { fonte: `sabatina do A TARDE; [A TARDE](https://atarde.com.br/eleicoes/sabatina-a-tarde-marcelo-carvalho-aborda-escala-6x1-lula-e-seguranca-1398241)`, itens: ["Diz ser o \"único candidato de Lula\" ao Senado na Bahia sem ligação com o governo estadual.", "É contra a escala 6x1 e defende aprovar a PEC no Senado.", "Na segurança, defende policiais mais qualificados e próximos da população, junto com educação e formação profissional."] },
+      temas: { e: "Declaração: é contra a escala 6x1 e defende aprovar a PEC no Senado (A TARDE).", c: "Declaração: policiais mais qualificados e próximos da população, junto com educação e formação profissional (A TARDE)." } },
+    "carlos-sodre": { numero: 33, partidoTxt: "Mobiliza", chapa: "", pesquisa: "1,1%", perfil: "80 anos, advogado, jornalista e procurador federal aposentado", bens: "R$ 561 mil",
+      trajetoria: "Natural de Itapé. Advogado, jornalista, professor e procurador federal aposentado; foi subsecretário estadual de Agricultura e é cônsul honorário da Costa do Marfim em Salvador. Recebeu em 2022 a Comenda 2 de Julho, da Assembleia. Disputou a prefeitura de Itapé em 2012.",
+      propostas: { fonte: `[CNN](https://www.cnnbrasil.com.br/eleicoes/quem-e-carlos-eduardo-sodre-candidato-ao-senado-pela-bahia/)`, itens: ["Mandato independente, sem alinhamento a grupos políticos, focado em interior, agricultura e estradas."] } },
+    "marcelo-santtana": { numero: 27, partidoTxt: "DC", chapa: "Suplentes: Cinde Fátima e Lázaro Leite (DC)", pesquisa: "0,9%", perfil: "68 anos, advogado e procurador municipal", bens: "R$ 1,34 milhão", nomeCompleto: "Marcelino José Guimarães Santana",
+      trajetoria: "Marcelino José Guimarães Santana, advogado, jornalista, cientista político e procurador municipal. Foi vereador de Lauro de Freitas de 2001 a 2005 e disputou a Câmara em 2006, 2018 e 2022. Tem o maior patrimônio entre os pequenos.",
+      semDecl: "Não foram localizadas propostas nem declarações dele." },
+    "gregorio-gould": { numero: 80, partidoTxt: "UP", chapa: "", pesquisa: "0,6%", perfil: "40 anos, escritor e sindicalista", bens: "R$ 995 mil", nomeCompleto: "Gregorio Motta Gould",
+      trajetoria: "Gregorio Motta Gould, escritor e sindicalista, fundador da UP, com duas décadas de militância comunista e atuação em ocupações de moradia em Salvador.",
+      declaracoes: { fonte: `lançamento da candidatura; [BNews](https://www.bnews.com.br/noticias/politica/os-candidatos-ao-senado-da-bahia-os-mais-falados-sao-gente-do-esquema-diz-nome-do-ao-senado-em-lancamento-de-candidatura.html)`, itens: ["Os candidatos mais conhecidos ao Senado \"são gente do esquema\"."] },
+      propostas: { fonte: "BNews", itens: ["Usar o dinheiro da dívida pública em saúde, educação e moradia.", "Redirecionar subsídios do agronegócio ao combate à pobreza."] } },
+    "marcelo-millet": { numero: 29, partidoTxt: "PCO", chapa: "Suplentes: Robson Lyra e Maria do Carmo (PCO)", pesquisa: "0,4%", perfil: "40 anos, motorista", bens: "sem bens", nomeCompleto: "Marcelo Millet Oliveira",
+      trajetoria: "Marcelo Millet Oliveira, motorista, sem bens declarados.",
+      semDecl: "Não foram localizadas declarações próprias.",
+      partido: `Candidatos do PCO no Ceará defendem acabar com o Senado e com as polícias, jornada de 35 horas e salário mínimo de R$ 7.500 ([O Povo](https://mais.opovo.com.br/jornal/politica/2026/08/29/candidatos-do-pco-no-ceara-defendem-acabar-com-o-senado-e-com-a-pm.html)). Isso indica a orientação do partido, mas não é declaração dele.` }
+  },
+  opiniao: {
+    intro: "São pesquisas nacionais, não votos nem declarações dos candidatos. O relatório não achou pesquisa da Bahia sobre esses temas, exceto segurança em Salvador.",
+    linhas: [
+      { tema: "Fim da escala 6x1", quem: "Delliana, Marcelo Carvalho, PSOL, Maria Bona pela jornada menor", ids: ["delliana", "marcelo-carvalho", "ronaldo-mansur", "maria-bona"], mostra: "71% a favor e 27% contra. Em maio, o Quaest deu 68% a 22%. Nordeste: 72%. Entre eleitores de Bolsonaro, 55% a favor (Datafolha) ou 44% a favor e 42% contra (Quaest).", fonte: "[Datafolha, 3 a 5/3/2026](https://www.metropoles.com/brasil/apoio-ao-fim-da-escala-6x1-cresce-e-chega-a-71-diz-datafolha); [Genial/Quaest, 8 a 11/5/2026](https://www.oliberal.com/economia/68-sao-a-favor-do-fim-da-escala-6x1-e-22-contra-mostra-pesquisa-genial-quaest-1.1122756)", barra: [["A favor", 71, "yes"], ["Contra", 27, "no"]] },
+      { tema: "Polícia menos letal e desmilitarização da PM", quem: "Delliana (polícia menos letal); Mansur e Aroldo Félix (desmilitarização)", ids: ["delliana", "ronaldo-mansur", "aroldo-felix"], mostra: "Sobre a operação de 28/10/2025 no Rio, com mais de 120 mortes: 69% aprovaram (Ipsos-Ipec) e 22% desaprovaram. 40% acharam as mortes totalmente justificadas e 28% injustificadas. 27% acharam a força excessiva, e 37% entre eleitores de Lula. Em Salvador, 72% apontam segurança como principal problema da cidade.", fonte: "[Ipsos-Ipec, nov/2025](https://timesbrasil.com.br/brasil/pesquisa-ipsos-operacao-policial-rio/); [Ipsos-Ipec, Salvador, dez/2024](https://www.bahianoticias.com.br/noticia/312368-seguranca-publica-e-maior-preocupacao-dos-soteropolitanos-diz-pesquisa) (300 entrevistas, margem de 6 pontos)", barra: [["Aprovaram a operação", 69, "yes"], ["Desaprovaram", 22, "no"]] },
+      { tema: "Mais policiais e operações", quem: "Ariel Capistrano", ids: ["candidato-dc"], mostra: "88% querem penas maiores, 73% querem tratar facções como terroristas e 60% apoiam a PEC da Segurança.", fonte: "[Genial/Quaest, 6 a 9/11/2025](https://www.infomoney.com.br/?p=3100332)", barra: [["Penas maiores", 88, "yes"], ["Facções como terroristas", 73, "yes"], ["Apoiam a PEC da Segurança", 60, "yes"]] },
+      { tema: "Maconha", quem: "Mansur", ids: ["ronaldo-mansur"], mostra: "67% são contra descriminalizar e 31% a favor.", fonte: "[Datafolha, 2024](https://www.jornalopcao.com.br/brasil/pesquisa-datafolha-mostra-que-brasil-continua-conservador-592242/)", barra: [["A favor", 31, "yes"], ["Contra", 67, "no"]] },
+      { tema: "Aborto pelo SUS", quem: "Mansur", ids: ["ronaldo-mansur"], mostra: "6% aceitam o aborto em todas as circunstâncias, 45% aceitam a lei atual e 35% querem proibição total.", fonte: "[Datafolha, 2024](https://www.jornalopcao.com.br/brasil/pesquisa-datafolha-mostra-que-brasil-continua-conservador-592242/)", barra: [["Todas as circunstâncias", 6, "yes"], ["Lei atual", 45, "abs"], ["Proibição total", 35, "no"]] },
+      { tema: "Taxar mais os ricos", quem: "Linha da esquerda: UP, PSOL", ids: ["aroldo-felix", "gregorio-gould", "ronaldo-mansur", "delliana"], mostra: "Sobre a isenção do IR até R$ 5 mil, 79% a favor. 64% aceitam aumentar o imposto dos super-ricos para compensar, e 29% são contra.", fonte: "[Genial/Quaest, 2 a 5/10/2025](https://www.bahianoticias.com.br/noticia/309326-pesquisa-quaest-revela-que-projeto-que-isenta-do-ir-quem-ganha-ate-rdollar-5-mil-e-apoiado-por-79-dos-brasileiros)", barra: [["Isenção do IR: a favor", 79, "yes"], ["Imposto dos super-ricos: a favor", 64, "yes"], ["Imposto dos super-ricos: contra", 29, "no"]] },
+      { tema: "Suspender a dívida do estado; dobrar o salário mínimo; reforma agrária", quem: "Mansur e Aroldo Félix (dívida); Aroldo Félix (salário mínimo); Maria Bona (reforma agrária)", ids: ["ronaldo-mansur", "aroldo-felix", "maria-bona"], mostra: "Sem pesquisa localizada.", fonte: "n/d" }
+    ],
+    leitura: "A bandeira mais forte entre eles é a 6x1, que tem maioria ampla, inclusive no Nordeste, e é defendida por Delliana e Marcelo Carvalho. As posições de Mansur em maconha e aborto estão contra a maioria medida nas pesquisas, e a de polícia menos letal divide o país, com maioria favorável às ações duras."
+  },
+  lacunas: [
+    "Votos e mandatos: não há. Santtana disputou a Câmara em 2006, 2018 e 2022 e Sodré foi subsecretário estadual, mas não foram achados votos nominais deles em pautas atuais.",
+    "Marcelo Santtana e Marcelo Millet: não foram achadas propostas nem declarações próprias.",
+    "PCO: o que está sobre o partido vem de candidatos do Ceará, não da Bahia.",
+    "Posições sobre pautas do Congresso (trans, casamento homoafetivo, Fiol, letalidade, terras raras): não foi achada declaração de nenhum dos dez.",
+    "José Estêvão (DC): também está registrado ao governo e não é medido nas pesquisas; não foi incluído entre os dez."
+  ],
+  fontes: [["Agência Senado: candidatos ao Senado pela Bahia", "https://www12.senado.leg.br/noticias/candidatos-2026/candidatos-2026-bahia"], ["Bahia Notícias: candidatos ao Senado", "https://www.bahianoticias.com.br/noticia/321251-eleicoes-2026-quem-sao-os-candidatos-ao-senado-pela-bahia"], ["Brasil de Fato: perfil dos candidatos ao governo", "https://www.brasildefato.com.br/2026/08/19/conheca-o-perfil-dos-candidatos-ao-governo-da-bahia/"]]
 };
 
 /* ---------------- DEPUTADOS FEDERAIS ---------------- */
@@ -1190,7 +1272,7 @@ function flag(s, opt = {}) {
 const PEOPLE = new Map();
 const campoPill = c => `<span class="pill ${c}">${esc(CAMPOS[c] || CAMPOS.nd)}</span>`;
 
-PERFIS.forEach(p => PEOPLE.set(p.id, Object.assign({ kind: "full" }, p)));
+PERFIS.forEach(p => { if (MENORES.cands[p.id]) p.menor = MENORES.cands[p.id]; PEOPLE.set(p.id, Object.assign({ kind: "full" }, p)); });
 
 const prodMap = new Map();
 PROD_2025.forEach(r => prodMap.set(slug(r[0]), { ano: "2025", row: r, parcial: PROD_PARCIAL[r[0]] }));
@@ -1256,7 +1338,7 @@ function vbadge(key, val) {
 function listBadge(o) { return o ? `<span class="v ${o.k}">${esc(o.rot)}${o.nota ? " · " + esc(o.nota) : ""}</span>` : `<span class="v dash">—</span>`; }
 
 /* ================= navegação ================= */
-const SECS = ["visao", "pautas", "politicos", "produtividade", "matriz", "votacoes", "metodo"];
+const SECS = ["visao", "pautas", "politicos", "menores", "produtividade", "matriz", "votacoes", "metodo"];
 const rendered = {};
 let current = null;
 function show(sec) {
@@ -1345,7 +1427,7 @@ function secHead(title, lead) { return `<header class="sec-head"><h1>${title}</h
 function renderVisao() {
   const el = $("#sec-visao");
   el.innerHTML = `
-  <header class="sec-head"><span class="eyebrow">Eleições 2026 · Bahia · relatório de ${esc(REPORT.data)}</span>
+  <header class="sec-head"><span class="eyebrow">Eleições 2026 · Bahia · 1º turno em 4/10/2026 · relatórios de ${esc(REPORT.data)} e ${esc(MENORES.data)}</span>
     <h1>Quem lidera, quem votou o quê</h1>
     <p>Governo, Senado, deputados federais e estaduais, cruzados com ${PAUTAS.length} pautas, votos nominais, pesquisas e produtividade.</p></header>
   <div class="kpis">
@@ -1437,9 +1519,10 @@ function pautaPositions(p) {
   if (p.topico) {
     const withPos = [], sr = [];
     PERFIS.filter(x => x.temas).forEach(x => { const t = x.temas[p.topico]; (isSR(t) ? sr : withPos).push({ x, t }); });
-    const minors = PERFIS.filter(x => !x.temas);
+    const minorsPos = PERFIS.filter(x => !x.temas && x.menor && x.menor.temas && x.menor.temas[p.topico]).map(x => ({ x, t: x.menor.temas[p.topico] + " Fonte: relatório de candidatos menores (30/9)." }));
+    const minors = PERFIS.filter(x => !x.temas && !minorsPos.some(m => m.x === x));
     const row = ({ x, t }, muted) => `<div><span class="who">${personLink(x.id, x.nome)}<span class="muted small">${flag(x.sigla)} · ${esc(CARGOS[x.cargo])}</span></span><span class="${muted ? "muted" : ""}">${md(t)}</span></div>`;
-    out += `<div class="block"><h3>Candidatos e senadores</h3><div class="pos-list">${withPos.map(r => row(r)).join("")}${sr.map(r => row(r, true)).join("")}
+    out += `<div class="block"><h3>Candidatos e senadores</h3><div class="pos-list">${withPos.map(r => row(r)).join("")}${minorsPos.map(r => row(r)).join("")}${sr.map(r => row(r, true)).join("")}
       ${PSOL_PARTIDO[p.topico] ? `<div><span class="who"><strong>PSOL</strong><span class="muted small">posição do partido (Ronaldo Mansur, Professora Delliana)</span></span><span>${md(PSOL_PARTIDO[p.topico])}</span></div>` : ""}
     </div><p class="sr-names">Sem mandato e sem posicionamento pessoal registrado: ${minors.map(m => esc(m.nome)).join(", ")}.</p></div>`;
   }
@@ -1488,7 +1571,7 @@ function openPauta(id) { pautaSel = id; go("pautas", () => selectPauta(id)); }
 
 /* ================= 3. POLÍTICOS ================= */
 function personSummary(p) {
-  if (p.kind === "full") return p.espectroTxt || p.ident;
+  if (p.kind === "full") return p.menor ? `${p.menor.perfil}. Bens: ${p.menor.bens}.` : (p.espectroTxt || p.ident);
   if (p.kind === "fed") return p.dest || p.nota || `6x1: ${p.t && p.t["6x1"] || "—"} · Antifacção: ${p.t && p.t.antifac || "—"}`;
   if (p.kind === "est") return p.pos;
   return (p.m || []).join(" ");
@@ -1554,6 +1637,24 @@ function matrixBlock(id) {
   const mr = MATRIX_BY_ID.get(id); if (!mr) return "";
   return `<section class="pf-sec"><h3>Na tabela comparativa final</h3><dl class="kv">${MATRIZ_COLS.slice(1).map((c, i) => `<dt>${esc(c)}</dt><dd>${esc(mr[i + 2])}</dd>`).join("")}</dl></section>`;
 }
+function menorBlock(p) {
+  const m = p.menor;
+  const opin = MENORES.opiniao.linhas.filter(l => l.ids.includes(p.id));
+  return `<section class="pf-sec"><h3>Perfil, chapa e bens <span class="src-tag">relatório de ${esc(MENORES.data)}</span></h3>
+    <dl class="kv">${m.nomeCompleto ? `<dt>Nome completo</dt><dd>${esc(m.nomeCompleto)}</dd>` : ""}<dt>Partido e número</dt><dd>${flag(p.sigla)} ${esc(m.partidoTxt)} · número ${m.numero}</dd>${m.chapa ? `<dt>Chapa</dt><dd>${esc(m.chapa)}</dd>` : ""}<dt>Pesquisa (set.)</dt><dd class="mono">${esc(m.pesquisa)}</dd><dt>Perfil</dt><dd>${esc(m.perfil)}</dd><dt>Bens declarados</dt><dd class="mono">${esc(m.bens)}</dd></dl>
+    <h4>Trajetória</h4><p>${md(m.trajetoria)}</p>
+    ${m.atencao ? `<div class="attn"><strong>Atenção:</strong> ${md(m.atencao)}</div>` : ""}</section>
+    ${m.declaracoes ? `<section class="pf-sec"><h3>Declarações dele(a)</h3><p class="muted small">Fonte: ${md(m.declaracoes.fonte)}</p><ul>${m.declaracoes.itens.map(i => `<li>${md(i)}</li>`).join("")}</ul></section>` : ""}
+    ${m.propostas ? `<section class="pf-sec"><h3>Propostas de campanha</h3><p class="muted small">Fonte: ${md(m.propostas.fonte)}</p><ul>${m.propostas.itens.map(i => `<li>${md(i)}</li>`).join("")}</ul></section>` : ""}
+    ${m.semDecl ? `<p class="muted">${md(m.semDecl)}</p>` : ""}
+    ${m.partido ? `<section class="pf-sec"><h3>Linha do partido, não pessoal</h3><p>${md(m.partido)}</p></section>` : ""}
+    ${opin.length ? `<section class="pf-sec"><h3>O que a opinião pública pensa dessas pautas</h3><div class="flow">${opin.map(opRow).join("")}</div><p class="muted small">${md(MENORES.opiniao.intro)}</p></section>` : ""}`;
+}
+function opRow(l) {
+  return `<div class="op-row"><div><strong>${esc(l.tema)}</strong><span class="muted small"> · quem defende: ${esc(l.quem)}</span></div>
+    ${l.barra ? `<div class="rank">${l.barra.map(([r, v, c]) => `<div class="r"><span>${esc(r)}</span><span class="t"><span style="width:${v}%;background:var(--${c})"></span></span><span class="num">${v}%</span></div>`).join("")}</div>` : ""}
+    <p class="small">${md(l.mostra)}</p><p class="muted xs">Pesquisa: ${md(l.fonte)}</p></div>`;
+}
 function openProfile(id) {
   const p = PEOPLE.get(id); if (!p) return;
   const vo = VOTE_OF.get(id) || {};
@@ -1571,7 +1672,8 @@ function openProfile(id) {
       h += `<section class="pf-sec"><h3>Posicionamento por tema</h3>${p.temasNota ? `<p class="muted">${md(p.temasNota)}</p>` : ""}
       <div class="temas">${Object.entries(TOPICOS).map(([k, t]) => temaRow(`${k}) ${esc(t)}`, p.temas[k])).join("")}</div></section>`;
     } else {
-      h += `<section class="pf-sec"><h3>Posições</h3><dl class="kv"><dt>Posições (partido, se não houver pessoal)</dt><dd>${md(p.posPartido || "Sem posicionamento registrado.")}</dd></dl>${p.temasNota ? `<p class="muted">${md(p.temasNota)}</p>` : ""}<p class="muted small">Sem mandato, então não há votos registrados em nenhuma das pautas.</p></section>`;
+      if (p.menor) h += menorBlock(p);
+      h += `<section class="pf-sec"><h3>Posições nas pautas (relatório de 29/9)</h3><dl class="kv"><dt>Posições (partido, se não houver pessoal)</dt><dd>${md(p.posPartido || "Sem posicionamento registrado.")}</dd></dl>${p.temasNota ? `<p class="muted">${md(p.temasNota)}</p>` : ""}<p class="muted small">Sem mandato, então não há votos registrados em nenhuma das pautas.</p></section>`;
     }
     if (p.extras) h += `<section class="pf-sec"><h3>Outras pautas e registros</h3><div class="temas">${p.extras.map(([k, v]) => temaRow(esc(k), v)).join("")}</div></section>`;
     const sp = SEN_PROD.find(x => x.id === p.id);
@@ -1889,7 +1991,8 @@ function allLinks() {
   const seen = new Map();
   const add = (u, t) => { if (!seen.has(u)) seen.set(u, new Set()); seen.get(u).add(t); };
   const walk = v => { if (typeof v === "string") v.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, (m, t, u) => { add(u, t); return m; }); else if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === "object") Object.values(v).forEach(walk); };
-  [RESUMO, POLLS, GRUPO_INTRO, PAUTAS, PERFIS, FED_REGRAS, FED_GRUPOS, FED_INTRO, FEDERAIS, PROD_FONTE, SEN_PROD, EST_INTRO, ESTADUAIS, ESTREANTES_TXT, ALBA_PROD, VOTACOES, EMPRESTIMOS].forEach(walk);
+  MENORES.fontes.forEach(([t, u]) => add(u, t));
+  [MENORES, RESUMO, POLLS, GRUPO_INTRO, PAUTAS, PERFIS, FED_REGRAS, FED_GRUPOS, FED_INTRO, FEDERAIS, PROD_FONTE, SEN_PROD, EST_INTRO, ESTADUAIS, ESTREANTES_TXT, ALBA_PROD, VOTACOES, EMPRESTIMOS].forEach(walk);
   FONTES.forEach(g => g.itens.forEach(([t, u]) => add(u, t)));
   POLLS.gov.outros.forEach(o => add(o.url, o.inst));
   return Array.from(seen.entries()).map(([u, ts]) => ({ u, ts: Array.from(ts), host: u.replace(/^https?:\/\/(www\d*\.)?/, "").split("/")[0] })).sort((a, b) => a.host.localeCompare(b.host) || a.u.localeCompare(b.u));
@@ -1908,7 +2011,7 @@ function renderMetodo() {
         <p class="muted small">Relatório de ${esc(REPORT.data)} (${esc(REPORT.autor)}). Situação das pautas em ${esc(REPORT.situacaoEm)}. Dados da Câmara consultados em 30/9/2026.</p>`;
     }],
     ["limites", "Limites do estudo", b => {
-      b.innerHTML = `<div class="tbl-wrap"><table><thead><tr><th>Tema</th><th>Limite</th></tr></thead><tbody>${LIMITES.map(([a, c]) => `<tr><td><strong>${esc(a)}</strong></td><td>${md(c)}</td></tr>`).join("")}</tbody></table></div>`;
+      b.innerHTML = `<div class="tbl-wrap"><table><thead><tr><th>Tema</th><th>Limite</th></tr></thead><tbody>${LIMITES.concat(MENORES.lacunas.map(l => ["Candidatos menores", l])).map(([a, c]) => `<tr><td><strong>${esc(a)}</strong></td><td>${md(c)}</td></tr>`).join("")}</tbody></table></div>`;
     }],
     ["fontes", "Fontes do relatório", b => {
       b.innerHTML = `<div class="grid3">${FONTES.map(g => `<div class="card flow"><h3>${esc(g.grupo)}</h3><ul class="small">${g.itens.map(([t, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul></div>`).join("")}</div>`;
@@ -1922,13 +2025,37 @@ function renderMetodo() {
   ]);
 }
 
-const RENDER = { visao: renderVisao, pautas: renderPautas, politicos: renderPoliticos, produtividade: renderProdutividade, matriz: renderMatriz, votacoes: renderVotacoes, metodo: renderMetodo };
+/* ================= CANDIDATOS MENORES ================= */
+function renderMenores() {
+  const el = $("#sec-menores");
+  el.innerHTML = `${secHead("Candidatos menores", `Os dez candidatos que pontuam entre 0,3% e 3,8%: quatro ao governo e seis ao Senado. Dados do relatório complementar de ${esc(MENORES.data)}.`)}<div id="menTabs"></div>`;
+  const tabela = ids => `<div class="tbl-wrap"><table><thead><tr><th>Candidato</th><th>Partido</th><th>Chapa</th><th class="n">Pesquisa</th><th>Perfil</th><th class="n">Bens</th></tr></thead><tbody>${ids.map(id => { const p = PEOPLE.get(id), m = p.menor; return `<tr><td><button class="nm" type="button" data-person="${id}">${esc(p.nome)}</button></td><td>${flag(p.sigla)}</td><td class="small">${esc(m.chapa || "—")}</td><td class="n">${esc(m.pesquisa)}</td><td class="small">${esc(m.perfil)}</td><td class="n">${esc(m.bens)}</td></tr>`; }).join("")}</tbody></table></div>`;
+  const cards = ids => `<div class="people">${ids.map(id => { const p = PEOPLE.get(id), m = p.menor; const tem = [m.declaracoes && "declarações", m.propostas && "propostas", m.partido && "linha do partido"].filter(Boolean); return `<button class="person" type="button" data-person="${id}"><span class="pn"><i class="dot out"></i>${esc(p.nome)}</span><span class="pm">${flag(p.sigla)}<span class="pill tag">${esc(m.pesquisa)}</span><span class="pill tag">Bens: ${esc(m.bens)}</span></span><span class="ps">${esc(plain(m.trajetoria))}</span><span class="muted xs">${tem.length ? "Tem " + tem.join(", ") : "Sem propostas nem declarações localizadas"}</span></button>`; }).join("")}</div>`;
+  TABSEL.menores = subTabs($("#menTabs"), "menores", [
+    ["resumo", "Resumo", b => {
+      b.innerHTML = `<div class="card prose flow"><p>${md(MENORES.resumo)}</p><p>${md(MENORES.contexto)}</p><p><strong>Em uma frase:</strong> ${md(MENORES.frase)}</p></div>
+        <div class="grid2"><div class="card flow"><h3>Governo da Bahia</h3>${pollBars(POLLS.gov.set.slice(2), { max: 5 })}</div><div class="card flow"><h3>Senado</h3>${pollBars(POLLS.sen.set.slice(4), { max: 5 })}</div></div>
+        <p class="muted small">Escala ampliada (0 a 5%) para comparar os candidatos menores entre si.</p>`;
+    }],
+    ["gov", `Governo <span class="tcount">${MENORES.gov.length}</span>`, b => { b.innerHTML = tabela(MENORES.gov) + `<h3>Perfis</h3>` + cards(MENORES.gov); }],
+    ["sen", `Senado <span class="tcount">${MENORES.sen.length}</span>`, b => { b.innerHTML = tabela(MENORES.sen) + `<h3>Perfis</h3>` + cards(MENORES.sen); }],
+    ["opiniao", "Opinião pública", b => {
+      b.innerHTML = `<p class="prose muted">${md(MENORES.opiniao.intro)}</p><div class="grid2">${MENORES.opiniao.linhas.map(l => `<div class="card">${opRow(l)}<div class="names mt">${l.ids.map(id => personLink(id)).join("")}</div></div>`).join("")}</div><p class="note"><strong>Leitura.</strong> ${md(MENORES.opiniao.leitura)}</p>`;
+    }],
+    ["lacunas", "Lacunas e fontes", b => {
+      b.innerHTML = `<div class="grid2"><div class="card prose flow"><h3>Lacunas</h3><ul>${MENORES.lacunas.map(l => `<li>${md(l)}</li>`).join("")}</ul></div>
+        <div class="card flow"><h3>Fontes</h3><ul class="small">${MENORES.fontes.map(([t, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul><p class="muted small">As demais fontes estão em cada candidato e na tabela de opinião pública.</p></div></div>`;
+    }]
+  ]);
+}
+
+const RENDER = { visao: renderVisao, pautas: renderPautas, politicos: renderPoliticos, menores: renderMenores, produtividade: renderProdutividade, matriz: renderMatriz, votacoes: renderVotacoes, metodo: renderMetodo };
 
 /* ================= busca global ================= */
 const IDX = [];
 PEOPLE.forEach(p => IDX.push({ kind: "Político", label: p.nome + (p.apelido ? ` (${p.apelido})` : ""), sub: `${p.sigla} · ${CARGOS[p.cargo]}`, s: norm([p.nome, p.apelido, p.partido, p.sigla, CARGOS[p.cargo]].join(" ")), act: () => openProfile(p.id), campo: p.campo || "nd" }));
 PAUTAS.forEach(p => IDX.push({ kind: "Pauta", label: p.titulo, sub: p.ref, s: norm([p.titulo, p.ref, p.propoe].join(" ")), act: () => openPauta(p.id) }));
-[["visao", "Pesquisas para governador e Senado"], ["produtividade", "Produtividade e assiduidade"], ["matriz", "Matriz comparativa"], ["votacoes", "Votações nominais e AL-BA"], ["metodo", "Fontes e limites do estudo"]].forEach(([k, t]) => IDX.push({ kind: "Seção", label: t, sub: "", s: norm(t), act: () => go(k) }));
+[["visao", "Pesquisas para governador e Senado"], ["menores", "Candidatos menores: bens, propostas e opinião pública"],["produtividade", "Produtividade e assiduidade"], ["matriz", "Matriz comparativa"], ["votacoes", "Votações nominais e AL-BA"], ["metodo", "Fontes e limites do estudo"]].forEach(([k, t]) => IDX.push({ kind: "Seção", label: t, sub: "", s: norm(t), act: () => go(k) }));
 const gq = $("#gq"), gr = $("#gresults"); let hits = [], hi = 0;
 function drawHits() {
   gr.innerHTML = hits.length ? hits.map((h, i) => `<button type="button" data-i="${i}" class="${i === hi ? "hl" : ""}">${h.campo ? `<i class="dot ${h.campo}"></i>` : ""}<span><strong>${esc(h.label)}</strong>${h.sub ? `<br><small class="muted">${esc(h.sub)}</small>` : ""}</span><span class="kind">${h.kind}</span></button>`).join("") : `<div class="empty">Nada encontrado. Tente um sobrenome, sigla de partido ou tema (ex.: "armas").</div>`;
